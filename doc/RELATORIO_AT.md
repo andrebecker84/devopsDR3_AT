@@ -726,7 +726,8 @@ Print da execução do workflow `maven-ci.yml` com build e upload do artefato.
 
 Print da execução do workflow `env-demo.yml` com variáveis em três níveis no log.
 
-![env-demo.yml workflow](../evidencias/11-env-demo-workflow.png)
+![env-demo.yml workflow — variaveis nivel workflow e job](../evidencias/11-env-demo-workflow.png)
+![env-demo.yml workflow — variaveis nivel step e resumo](../evidencias/11-env-demo-workflow-2.png)
 
 ---
 
