@@ -716,9 +716,13 @@ Print da execução do workflow `tests.yml` disparado por pull_request.
 
 ### 10 — Execução do maven-ci.yml
 
-Print da execução do workflow `maven-ci.yml` com build e upload do artefato.
+Print do step "Build com Maven" com `BUILD SUCCESS`.
 
-![maven-ci.yml workflow](../evidencias/10-gradle-ci-workflow.png)
+![maven-ci.yml — build](../evidencias/10-maven-ci-workflow.png)
+
+Print do step "Upload do artefato" com `actions/upload-artifact` preservando o JAR.
+
+![maven-ci.yml — upload artefato](../evidencias/10-maven-ci-workflow-2.png)
 
 ---
 

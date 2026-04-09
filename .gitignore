@@ -37,8 +37,6 @@ build/
 Thumbs.db
 ehthumbs.db
 
-# Evidencias (screenshots sao grandes — commit seletivo)
-evidencias/
 
 # Arquivos temporarios do kubectl
 kubeconfig
