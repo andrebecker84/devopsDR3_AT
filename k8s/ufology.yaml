@@ -1,0 +1,276 @@
+# =============================================================================
+# Manifestos Kubernetes — Operacao Ufology
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Aplicar: kubectl apply -f k8s/ufology.yaml
+# Remover: kubectl delete -f k8s/ufology.yaml
+# Verificar: kubectl get all -n ufology
+# =============================================================================
+
+# =============================================================================
+# MISSAO 1 — Namespace exclusivo da operacao
+# =============================================================================
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ufology
+  labels:
+    # Identifica o projeto ao qual este namespace pertence
+    project: ufology
+    managed-by: kubectl
+
+---
+
+# =============================================================================
+# MISSAO 1 — Banco de dados PostgreSQL (imagem customizada da operacao)
+# Imagem: leogloriainfnet/ufodb
+# Referencia: https://hub.docker.com/r/leogloriainfnet/ufodb
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ufodb-deployment
+  namespace: ufology
+  labels:
+    app: ufodb
+    component: database
+    mission: "1"
+spec:
+  # Missao 1 exige exatamente 1 replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ufodb
+  template:
+    metadata:
+      labels:
+        app: ufodb
+        component: database
+    spec:
+      containers:
+        - name: ufodb
+          # Tag linux/amd64 para Windows e Linux; usar tag arm64 em Mac Apple Silicon
+          image: leogloriainfnet/ufodb:latest
+          ports:
+            - containerPort: 5432
+              protocol: TCP
+          env:
+            # Usuario administrador do PostgreSQL
+            - name: POSTGRES_USER
+              value: "postgres"
+            # Senha do banco — em producao usar Secret; aqui em valor direto conforme enunciado Missao 1
+            - name: POSTGRES_PASSWORD
+              value: "devops2025!"
+            # Nome do banco de dados da operacao
+            - name: POSTGRES_DB
+              value: "ufology"
+
+---
+
+# Servico interno para o PostgreSQL — acessivel apenas dentro do cluster
+# Tipo ClusterIP: nenhuma porta exposta externamente (seguranca por design)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ufodb-service
+  namespace: ufology
+  labels:
+    app: ufodb
+    component: database
+spec:
+  # ClusterIP: banco acessivel somente dentro do namespace/cluster
+  type: ClusterIP
+  selector:
+    app: ufodb
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+
+---
+
+# =============================================================================
+# MISSAO 2 — Cache Redis (imagem Alpine — menor footprint)
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-deployment
+  namespace: ufology
+  labels:
+    app: redis
+    component: cache
+    mission: "2"
+spec:
+  # Missao 2 exige exatamente 1 replica
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+        component: cache
+    spec:
+      containers:
+        - name: redis
+          # Alpine: imagem mais leve, menor superficie de ataque
+          image: redis:alpine
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+
+---
+
+# Servico interno para o Redis — porta padrao 6379
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: ufology
+  labels:
+    app: redis
+    component: cache
+spec:
+  type: ClusterIP
+  selector:
+    app: redis
+  ports:
+    - name: redis
+      port: 6379
+      targetPort: 6379
+      protocol: TCP
+
+---
+
+# =============================================================================
+# MISSAO 4 — Configuracoes nao sensiveis da aplicacao
+# ConfigMap: DB_NAME (nome do banco — dado de configuracao, nao credencial)
+# =============================================================================
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: ufology
+  labels:
+    app: ufo-tracker
+    component: config
+    mission: "4"
+data:
+  # Nome do banco de dados — referenciado pelo Deployment da aplicacao
+  DB_NAME: "ufology"
+
+---
+
+# =============================================================================
+# MISSAO 4 — Credenciais sensiveis da aplicacao
+# Secret: DB_PASSWORD (senha do banco — nunca deve aparecer em Deployment direto)
+# =============================================================================
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: db-secret
+  namespace: ufology
+  labels:
+    app: ufo-tracker
+    component: secret
+    mission: "4"
+# Opaque: tipo generico para segredos arbitrarios de chave-valor
+type: Opaque
+# stringData: valores em texto plano no manifesto — Kubernetes armazena em Base64 internamente
+# ATENCAO: este manifesto nao deve ser commitado com valores reais em producao
+# Use Sealed Secrets ou External Secrets Operator em ambientes produtivos
+stringData:
+  DB_PASSWORD: "devops2025!"
+
+---
+
+# =============================================================================
+# MISSAO 4 — Deployment da aplicacao ufoTracker
+# Imagem publicada no Docker Hub na Missao 3
+# 2 replicas para demonstrar escalabilidade horizontal
+# =============================================================================
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ufo-tracker-deployment
+  namespace: ufology
+  labels:
+    app: ufo-tracker
+    component: application
+    mission: "4"
+spec:
+  # Missao 4 exige 2 replicas
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ufo-tracker
+  template:
+    metadata:
+      labels:
+        app: ufo-tracker
+        component: application
+    spec:
+      containers:
+        - name: ufo-tracker
+          # Substituir pelo link real da imagem publicada no Docker Hub na Missao 3
+          image: becker84/ufo-tracker:latest
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            # DB_NAME injetado do ConfigMap app-config (referencia, nao usada diretamente no application.yaml)
+            - name: DB_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: app-config
+                  key: DB_NAME
+            # POSTGRES_USERNAME: nome exato esperado pelo application.yaml via ${POSTGRES_USERNAME}
+            - name: POSTGRES_USERNAME
+              value: "postgres"
+            # POSTGRES_PASSWORD: nome exato esperado pelo application.yaml via ${POSTGRES_PASSWORD}
+            # Injetado do Secret db-secret — nunca em texto plano aqui
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secret
+                  key: DB_PASSWORD
+            # Sobrescreve spring.datasource.url — troca localhost pelo Service interno do cluster
+            # O DNS interno do Kubernetes resolve ufodb-service para o IP do pod do banco
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://ufodb-service:5432/ufology"
+            # Sobrescreve spring.data.redis.host — troca localhost pelo Service interno do cluster
+            - name: SPRING_DATA_REDIS_HOST
+              value: "redis-service"
+            - name: SPRING_DATA_REDIS_PORT
+              value: "6379"
+
+---
+
+# Servico interno para a aplicacao ufoTracker
+apiVersion: v1
+kind: Service
+metadata:
+  name: ufo-tracker-service
+  namespace: ufology
+  labels:
+    app: ufo-tracker
+    component: application
+spec:
+  type: ClusterIP
+  selector:
+    app: ufo-tracker
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

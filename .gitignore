@@ -1,0 +1,45 @@
+# Configuracao do Claude Code (nao deve ser versionado)
+CLAUDE.md
+.claude/
+
+# Variaveis de ambiente e credenciais
+.env
+.env.*
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Logs gerados em execucao
+logs/
+*.log
+
+# Artefatos de build
+target/
+build/
+*.class
+*.jar
+*.war
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# Docker
+.dockerignore
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# Evidencias (screenshots sao grandes — commit seletivo)
+evidencias/
+
+# Arquivos temporarios do kubectl
+kubeconfig
+*.kubeconfig

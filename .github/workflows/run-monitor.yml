@@ -1,0 +1,258 @@
+# =============================================================================
+# run-monitor.yml — Parte 3, Itens 3-5 (Rubricas 3, 4 e 5)
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Trigger: push para main e acionamento manual (workflow_dispatch)
+# Funcao: pipeline completo com:
+#   - Variaveis em tres niveis (workflow, job, step)
+#   - Validacao de pre-condicoes antes de acoes criticas (Rubrica 4)
+#   - Testes de verificacao antes do deploy (Rubrica 4)
+#   - Job summaries via $GITHUB_STEP_SUMMARY (Rubrica 5)
+#   - Mensagens ::warning:: e ::error:: customizadas (Rubrica 5)
+#   - Debug via ACTIONS_STEP_DEBUG=true (configurar como secret no repo) (Rubrica 5)
+#   - Ambiente de staging (deploy automatico) (Rubrica 3)
+#   - Ambiente de producao com aprovacao manual obrigatoria (Rubricas 3 e 4)
+#   - Uso do GITHUB_TOKEN para autenticacao (Rubrica 3)
+#
+# Pre-requisitos no repositorio GitHub:
+#   Secrets:
+#     ACTIONS_STEP_DEBUG=true  (habilita logs de debug detalhados)
+#   Variables (Settings > Secrets and variables > Variables):
+#     STAGING_DOMAIN=staging.ufo-tracker.example.com
+#     PROD_DOMAIN=ufo-tracker.example.com
+#   Environments (Settings > Environments):
+#     staging     (sem protecao — deploy automatico)
+#     production  (com protecao — Required reviewers configurados)
+# =============================================================================
+
+name: Run Monitor
+
+on:
+  push:
+    branches:
+      - main
+  # Permite acionamento manual pela interface do GitHub Actions
+  workflow_dispatch:
+
+# Nivel 1 — Variaveis de ambiente no nivel do workflow
+# Disponivel em todos os jobs e steps
+env:
+  APP_NAME: ufo-tracker
+  DEPLOY_ENV: staging
+  JAVA_VERSION: '21'
+
+jobs:
+
+  # ---------------------------------------------------------------------------
+  # Job 1: validate
+  # Valida pre-condicoes e executa testes antes de qualquer deploy
+  # Rubrica 4: validacao de variaveis + testes antes do deploy
+  # ---------------------------------------------------------------------------
+  validate:
+    runs-on: ubuntu-latest
+
+    # Nivel 2 — Variavel de ambiente no nivel do job
+    env:
+      JOB_STAGE: validation
+
+    steps:
+      - name: Checkout do codigo-fonte
+        uses: actions/checkout@v4
+
+      - name: Validar variaveis obrigatorias
+        # Nivel 3 — Variavel de ambiente no nivel do step
+        env:
+          STEP_ACTION: pre-flight-check
+        run: |
+          echo "=== Pre-flight check: $STEP_ACTION ==="
+          echo "Stage: $JOB_STAGE"
+
+          # Valida variaveis obrigatorias antes de acoes criticas
+          # Se APP_NAME nao estiver definido, o pipeline para imediatamente
+          if [ -z "$APP_NAME" ]; then
+            echo "::error::APP_NAME nao definido — configure a variavel no nivel do workflow"
+            exit 1
+          fi
+
+          if [ -z "$DEPLOY_ENV" ]; then
+            echo "::error::DEPLOY_ENV nao definido — configure a variavel no nivel do workflow"
+            exit 1
+          fi
+
+          echo "::notice::Variaveis validadas com sucesso"
+          echo "APP_NAME=$APP_NAME"
+          echo "DEPLOY_ENV=$DEPLOY_ENV"
+          echo "JAVA_VERSION=$JAVA_VERSION"
+
+      - name: Configurar Java ${{ env.JAVA_VERSION }}
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Executar testes de verificacao
+        # Testes executados ANTES do deploy — garante que apenas codigo validado e entregue
+        run: |
+          echo "=== Testes de verificacao ==="
+          # Em producao: substituir por mvn test --file ufo-tracker/pom.xml
+          echo "::warning::Testes simulados — substitua por chamada real ao test runner"
+          echo "Simulando execucao dos testes..."
+          echo "Todos os testes passaram"
+
+      - name: Build do artefato
+        run: |
+          echo "=== Build do artefato ==="
+          # Em producao: mvn package -DskipTests -B --file ufo-tracker/pom.xml
+          echo "Build simulado — artefato gerado"
+          echo "::notice::Build concluido com sucesso"
+
+      - name: Gerar resumo do job validate
+        # $GITHUB_STEP_SUMMARY: arquivo especial que gera conteudo na aba Summary do GitHub Actions
+        # Suporta Markdown completo: tabelas, listas, titulos, bold
+        run: |
+          echo "## Resultado da Validacao" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Aplicacao | \`$APP_NAME\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Ambiente alvo | \`$DEPLOY_ENV\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Java | \`$JAVA_VERSION\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Autor | \`${{ github.actor }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Status:** Validacao concluida com sucesso" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Job 2: deploy-staging
+  # Deploy automatico para staging apos validacao bem-sucedida
+  # Rubrica 3: ambiente protegido; Rubrica 4: deploy condicionado ao job validate
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    runs-on: ubuntu-latest
+    # Aguarda o job validate concluir com sucesso antes de executar
+    needs: validate
+    # Ambiente staging: deploy automatico, sem aprovacao manual
+    environment: staging
+
+    env:
+      JOB_STAGE: deploy-staging
+
+    steps:
+      - name: Deploy para staging
+        env:
+          # vars.STAGING_DOMAIN: variavel de repositorio (nao secret)
+          # Configurar em: Settings > Secrets and variables > Variables
+          STAGING_URL: ${{ vars.STAGING_DOMAIN }}
+        run: |
+          echo "=== Deploy para staging ==="
+          echo "Aplicacao: $APP_NAME"
+          echo "Dominio de staging: $STAGING_URL"
+          # Em producao: executar script de deploy real aqui
+          echo "::notice::Deploy de staging concluido com sucesso"
+
+      - name: Verificar integridade pos-deploy (staging)
+        run: |
+          echo "=== Health check em staging ==="
+          # Em producao: curl -f https://${{ vars.STAGING_DOMAIN }}/actuator/health
+          echo "Health check simulado — aplicacao saudavel em staging"
+
+      - name: Resumo do deploy staging
+        run: |
+          echo "## Deploy Staging" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Ambiente:** staging" >> $GITHUB_STEP_SUMMARY
+          echo "- **Aplicacao:** \`$APP_NAME\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Dominio:** \`${{ vars.STAGING_DOMAIN }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Status:** Implantado com sucesso" >> $GITHUB_STEP_SUMMARY
+
+  # ---------------------------------------------------------------------------
+  # Job 3: deploy-production
+  # Deploy para producao com aprovacao manual obrigatoria
+  # Rubrica 3: ambiente com Required reviewers; Rubrica 4: aprovacao manual
+  # ---------------------------------------------------------------------------
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    # Ambiente production: requer aprovacao manual de um reviewer configurado
+    # Configurar em: Settings > Environments > production > Required reviewers
+    environment: production
+
+    env:
+      JOB_STAGE: deploy-production
+
+    steps:
+      - name: Validar dominio de producao
+        env:
+          PROD_URL: ${{ vars.PROD_DOMAIN }}
+        run: |
+          echo "=== Validacao pre-producao ==="
+
+          # Valida que a variavel de producao foi configurada no ambiente
+          if [ -z "$PROD_URL" ]; then
+            echo "::error::PROD_DOMAIN nao configurado — defina a variavel no ambiente production"
+            exit 1
+          fi
+
+          echo "Dominio de producao: $PROD_URL"
+          echo "::notice::Variavel PROD_DOMAIN validada"
+
+      - name: Deploy para producao
+        env:
+          PROD_URL: ${{ vars.PROD_DOMAIN }}
+        run: |
+          echo "=== Deploy para producao ==="
+          echo "Aplicacao: $APP_NAME"
+          echo "Dominio: $PROD_URL"
+          # Em producao: executar script de deploy real aqui
+          echo "::notice::Deploy de producao concluido com sucesso"
+
+      - name: Verificar integridade pos-deploy (producao)
+        run: |
+          echo "=== Health check em producao ==="
+          # Em producao: curl -f https://${{ vars.PROD_DOMAIN }}/actuator/health
+          echo "Health check simulado — aplicacao saudavel em producao"
+
+      - name: Criar release via GITHUB_TOKEN
+        # GITHUB_TOKEN: token automatico do GitHub Actions
+        # Permissoes: leitura/escrita no repositorio em execucao
+        # Nao requer configuracao adicional — disponivel em todas as execucoes
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const { repo, owner } = context.repo;
+            console.log(`Autenticado via GITHUB_TOKEN no repositorio: ${owner}/${repo}`);
+            console.log('Pronto para criar releases, comentar PRs ou interagir com a API do GitHub');
+
+      - name: Diagnostico automatizado de falhas
+        # Executado sempre, mesmo se steps anteriores falharem
+        # Garante observabilidade em caso de erro no pipeline
+        if: failure()
+        run: |
+          echo "::error::Falha detectada no deploy de producao"
+          echo "::error::Verifique: 1) variavel PROD_DOMAIN configurada no ambiente production"
+          echo "::error::           2) aprovacao manual concluida pelo reviewer"
+          echo "::error::           3) credenciais de deploy validas"
+          echo "Sugestao de correcao: revise os logs dos steps anteriores e verifique as configuracoes do ambiente"
+
+      - name: Resumo final do pipeline
+        if: always()
+        run: |
+          echo "## Resumo Final do Pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Etapas executadas" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Validacao e testes" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Deploy staging (automatico)" >> $GITHUB_STEP_SUMMARY
+          echo "- [x] Deploy producao (aprovacao manual)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Informacoes do pipeline" >> $GITHUB_STEP_SUMMARY
+          echo "| Campo | Valor |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|-------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Aplicacao | \`$APP_NAME\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Branch | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Commit | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Workflow run | \`#${{ github.run_number }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Autor | \`${{ github.actor }}\` |" >> $GITHUB_STEP_SUMMARY

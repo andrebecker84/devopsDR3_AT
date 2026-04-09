@@ -1,0 +1,21 @@
+# =============================================================================
+# hello.yml — Parte 2, Item 1
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Trigger: qualquer push em qualquer branch
+# Funcao: exibe "Hello CI/CD" no log para validar estrutura basica de workflow
+# =============================================================================
+
+name: Hello CI/CD
+
+on:
+  push:
+
+jobs:
+  hello:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Exibir mensagem de CI/CD
+        run: echo "Hello CI/CD"

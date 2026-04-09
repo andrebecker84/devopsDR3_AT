@@ -1,0 +1,63 @@
+# =============================================================================
+# env-demo.yml — Parte 3, Item 1
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Trigger: qualquer push
+# Funcao: demonstra declaracao e uso de variaveis de ambiente em tres niveis:
+#   - Nivel workflow: disponivel em todos os jobs e steps
+#   - Nivel job: disponivel apenas nos steps daquele job
+#   - Nivel step: disponivel apenas no step especifico
+# =============================================================================
+
+name: Env Demo
+
+on:
+  push:
+
+# Nivel 1 — Variavel de ambiente declarada no nivel do workflow
+# Disponivel em todos os jobs e steps deste workflow
+env:
+  DEPLOY_ENV: staging
+  APP_NAME: ufo-tracker
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+
+    # Nivel 2 — Variavel de ambiente declarada no nivel do job
+    # Disponivel apenas nos steps deste job
+    env:
+      JOB_REGION: us-east-1
+      JOB_VERSION: "1.0.0"
+
+    steps:
+      - name: Exibir variaveis do nivel workflow
+        run: |
+          echo "=== Variaveis de nivel WORKFLOW ==="
+          echo "Ambiente de deploy: $DEPLOY_ENV"
+          echo "Nome da aplicacao: $APP_NAME"
+
+      - name: Exibir variaveis do nivel job
+        run: |
+          echo "=== Variaveis de nivel JOB ==="
+          echo "Regiao: $JOB_REGION"
+          echo "Versao: $JOB_VERSION"
+
+      - name: Exibir variaveis do nivel step
+        # Nivel 3 — Variavel de ambiente declarada no nivel do step
+        # Disponivel apenas neste step; nao acessivel nos demais steps
+        env:
+          STEP_COMMENT: "Build disparado por push"
+          STEP_ACTOR: ${{ github.actor }}
+        run: |
+          echo "=== Variaveis de nivel STEP ==="
+          echo "Comentario: $STEP_COMMENT"
+          echo "Autor do push: $STEP_ACTOR"
+
+      - name: Resumo dos tres niveis
+        run: |
+          echo "=== Resumo ==="
+          echo "Workflow -> DEPLOY_ENV=$DEPLOY_ENV"
+          echo "Job      -> JOB_REGION=$JOB_REGION"
+          echo "Step     -> STEP_COMMENT nao acessivel aqui (escopo do step anterior)"

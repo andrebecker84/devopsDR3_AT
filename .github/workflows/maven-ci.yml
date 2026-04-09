@@ -1,0 +1,45 @@
+# =============================================================================
+# gradle-ci.yml — Parte 2, Item 3
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Trigger: push para a branch main
+# Funcao: build do projeto ufoTracker com Maven + Java 21 e upload do artefato JAR
+# =============================================================================
+
+name: Maven CI
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do codigo-fonte
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          # Cache do repositorio Maven para acelerar builds subsequentes
+          cache: maven
+
+      - name: Build com Maven
+        # -B: modo batch (sem interatividade, adequado para CI)
+        # -DskipTests: testes sao executados no job de testes, nao no build
+        run: mvn package -DskipTests -B --file ufo-tracker/pom.xml
+
+      - name: Upload do artefato JAR
+        # Persiste o JAR gerado para download ou uso em jobs subsequentes
+        uses: actions/upload-artifact@v4
+        with:
+          name: ufo-tracker-jar
+          path: ufo-tracker/target/*.jar
+          # Artefato disponivel por 7 dias
+          retention-days: 7

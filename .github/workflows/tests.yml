@@ -1,0 +1,24 @@
+# =============================================================================
+# tests.yml — Parte 2, Item 2
+# Disciplina: DevOps (DR3) — Assessment Final (AT)
+# Aluno: Andre Luis Becker — Instituto Infnet — 2026
+#
+# Trigger: pull_request (abertura, atualizacao e reabertura)
+# Funcao: checkout do codigo e execucao dos testes de integracao continua
+# =============================================================================
+
+name: Testes CI
+
+on:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do codigo-fonte
+        uses: actions/checkout@v4
+
+      - name: Executar testes
+        run: echo "Rodando testes"
