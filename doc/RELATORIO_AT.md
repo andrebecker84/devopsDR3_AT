@@ -414,7 +414,7 @@ jobs:
         run: echo "Hello CI/CD"
 ```
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/hello.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/hello.yml)
 
 ---
 
@@ -437,7 +437,7 @@ jobs:
         run: echo "Rodando testes"
 ```
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/tests.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/tests.yml)
 
 ---
 
@@ -478,7 +478,7 @@ jobs:
           path: target/*.jar
 ```
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/maven-ci.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/maven-ci.yml)
 
 ---
 
@@ -510,7 +510,7 @@ jobs:
 
 Demonstra variáveis em três níveis: workflow (`DEPLOY_ENV`), job (`JOB_VAR`) e step (`STEP_VAR`). Cada nível sobrescreve o anterior se houver conflito de nome.
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/env-demo.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/env-demo.yml)
 
 ---
 
@@ -537,7 +537,7 @@ jobs:
 
 O valor real do secret nunca aparece no log — o GitHub substitui automaticamente por `***`. O step verifica apenas a presença do secret, exibindo a mensagem de confirmação sem expor o conteúdo.
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/secret-demo.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/secret-demo.yml)
 
 ---
 
@@ -636,7 +636,7 @@ jobs:
 - `$GITHUB_STEP_SUMMARY` gera tabela Markdown na aba Summary da execução
 - `secrets.GITHUB_TOKEN` usado para autenticação na API do GitHub sem token pessoal
 
-**Link da execução:** [execucao no GitHub Actions](https://github.com/becker84/devopsDR3_AT/actions/workflows/run-monitor.yml)
+**Link da execução:** [execucao no GitHub Actions](https://github.com/andrebecker84/devopsDR3_AT/actions/workflows/run-monitor.yml)
 
 ---
 

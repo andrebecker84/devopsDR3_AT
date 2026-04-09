@@ -17,9 +17,9 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?logo=readme&logoColor=white)](LICENSE)
 ![Status](https://img.shields.io/badge/Status-Completo-success)
 
-![CI hello](https://img.shields.io/github/actions/workflow/status/becker84/devopsDR3_AT/hello.yml?label=hello%20CI&logo=githubactions&logoColor=white)
-![CI tests](https://img.shields.io/github/actions/workflow/status/becker84/devopsDR3_AT/tests.yml?label=tests%20CI&logo=githubactions&logoColor=white)
-![CI maven](https://img.shields.io/github/actions/workflow/status/becker84/devopsDR3_AT/maven-ci.yml?label=maven%20CI&logo=githubactions&logoColor=white)
+![CI hello](https://img.shields.io/github/actions/workflow/status/andrebecker84/devopsDR3_AT/hello.yml?label=hello%20CI&logo=githubactions&logoColor=white)
+![CI tests](https://img.shields.io/github/actions/workflow/status/andrebecker84/devopsDR3_AT/tests.yml?label=tests%20CI&logo=githubactions&logoColor=white)
+![CI maven](https://img.shields.io/github/actions/workflow/status/andrebecker84/devopsDR3_AT/maven-ci.yml?label=maven%20CI&logo=githubactions&logoColor=white)
 
 > **Infraestrutura da Operacao Ufology: PostgreSQL e Redis no Kubernetes, aplicacao Spring Boot containerizada e publicada no Docker Hub, pipelines de CI/CD completos com GitHub Actions**
 
@@ -165,7 +165,7 @@ k8s/ufology.yaml
 
 ```bash
 # Clonar o repositorio
-git clone https://github.com/becker84/devopsDR3_AT.git
+git clone https://github.com/andrebecker84/devopsDR3_AT.git
 cd devopsDR3_AT
 
 # Aplicar todos os manifestos (namespace + deployments + services + configmap + secret)

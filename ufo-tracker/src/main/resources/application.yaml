@@ -1,0 +1,32 @@
+spring:
+  cache:
+    type: redis
+    cache-names:
+      - casosUfo
+      - avistamentos
+    redis:
+      time-to-live: 10m
+      cache-null-values: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  application:
+    name: ufoTracker
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ufology
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        hibernate.jdbc.time_zone: America/Sao_Paulo
+    hibernate:
+      ddl-auto: none
+
+
+
