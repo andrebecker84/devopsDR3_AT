@@ -97,7 +97,7 @@ kubectl cluster
         │
         ├── [ufodb-deployment]   leogloriainfnet/ufodb  (1 replica)
         │     POSTGRES_USER=postgres
-        │     POSTGRES_PASSWORD=devops2025!
+        │     POSTGRES_PASSWORD=<secret>
         │     POSTGRES_DB=ufology
         │         └── [ufodb-service]  ClusterIP :5432
         │
@@ -110,7 +110,7 @@ kubectl cluster
         │         └── [ufo-tracker-service]  ClusterIP :porta-da-app
         │
         ├── ConfigMap: app-config   (DB_NAME=ufology)
-        └── Secret: db-secret       (DB_PASSWORD=devops2025!)
+        └── Secret: db-secret       (DB_PASSWORD=<secret>)
 ```
 
 ### Fluxo de provisionamento
