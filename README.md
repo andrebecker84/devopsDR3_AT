@@ -317,7 +317,8 @@ As capturas de tela e evidencias completas estao documentadas em **[doc/RELATORI
 | Pods da aplicacao em execucao (2 replicas) | `evidencias/07-ufo-tracker-pods.png` |
 | Execucao do hello.yml no GitHub Actions | `evidencias/08-hello-workflow.png` |
 | Execucao do tests.yml no GitHub Actions | `evidencias/09-tests-workflow.png` |
-| Execucao do maven-ci.yml no GitHub Actions | `evidencias/10-gradle-ci-workflow.png` |
+| Execucao do maven-ci.yml — build Maven | `evidencias/10-maven-ci-workflow.png` |
+| Execucao do maven-ci.yml — upload artefato | `evidencias/10-maven-ci-workflow-2.png` |
 | Execucao do env-demo.yml no GitHub Actions | `evidencias/11-env-demo-workflow.png` |
 | Execucao do secret-demo.yml no GitHub Actions | `evidencias/12-secret-demo-workflow.png` |
 | Execucao do run-monitor.yml no GitHub Actions | `evidencias/13-run-monitor-workflow.png` |
